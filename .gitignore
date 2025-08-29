@@ -1,0 +1,56 @@
+# Go build artifacts
+/bin/
+/build/
+/out/
+
+# Executable files
+*.exe
+*.exe~
+*.dll
+*.so
+*.dylib
+
+# Test binaries
+*.test
+
+# Go workspace file
+go.work
+go.work.sum
+
+# Dependency directories (Go Modules)
+vendor/
+
+# Logs
+*.log
+logs/
+
+# Environment files
+.env
+.env.local
+.env.*.local
+
+# IDE/editor files
+.idea/
+.vscode/
+*.iml
+
+# Mac OS
+.DS_Store
+
+# Windows
+Thumbs.db
+ehthumbs.db
+Desktop.ini
+
+# Temporary files
+*.tmp
+*.temp
+*.swp
+*.swo
+
+# Coverage reports
+coverage.out
+*.coverprofile
+
+# Static assets generated during build (optional, depends on project)
+dist/

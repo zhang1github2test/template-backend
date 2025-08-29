@@ -1,0 +1,9 @@
+app:
+  port: 8080
+  env: dev
+  name: template-backend
+jwt:
+  secret: 123456
+  expires: 1000
+  skip_auth_urls:
+    - auth/login
