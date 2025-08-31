@@ -29,9 +29,9 @@ func ServerMain() {
 
 	r := gin.New()
 	r.Use(gin.Recovery(), middleware.LoggingMiddleware(logger), middleware.CORSMiddleware(), middleware.JWTMiddleware())
-
+	db := config.InitDB()
 	// 自动注册路由（模块通过 init 注册）
-	router.RegisterRoutes(r)
+	router.RegisterRoutes(r, db)
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.Port),

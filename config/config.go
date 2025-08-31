@@ -2,7 +2,12 @@ package config
 
 import (
 	"fmt"
+	"template-backend/internal/model"
+
 	"github.com/spf13/viper"
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
+
 	"log"
 )
 
@@ -12,6 +17,13 @@ type AppConfig struct {
 		Port int
 		Env  string
 	} `mapstructure:"app"`
+
+	Database struct {
+		Host     string
+		DbName   string
+		Account  string
+		Password string
+	} `mapstructure:"database"`
 
 	JWT struct {
 		Secret       string
@@ -57,4 +69,18 @@ func GetConfig() *AppConfig {
 		log.Fatal("配置未初始化，请先调用 LoadConfig()")
 	}
 	return cfg
+}
+
+func InitDB() *gorm.DB {
+	database := GetConfig().Database
+	dsn := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8mb4&parseTime=True&loc=Local", database.Account, database.Password, database.Host, database.DbName)
+	db, err := gorm.Open(mysql.Open(dsn), &gorm.Config{})
+	if err != nil {
+		log.Fatalf("数据库连接失败: %v", err)
+	}
+	// 自动建表
+	db.AutoMigrate(&model.User{})
+	db.AutoMigrate(&model.Role{})
+	db.AutoMigrate(&model.Menu{})
+	return db
 }

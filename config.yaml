@@ -7,3 +7,8 @@ jwt:
   expires: 1000
   skip_auth_urls:
     - auth/login
+database:
+  host: 127.0.0.1:3306
+  dbName: template
+  account: remote_user
+  password: RemoteUserPassword@123
