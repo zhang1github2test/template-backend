@@ -82,5 +82,6 @@ func InitDB() *gorm.DB {
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Role{})
 	db.AutoMigrate(&model.Menu{})
+	db.AutoMigrate(&model.Config{})
 	return db
 }
