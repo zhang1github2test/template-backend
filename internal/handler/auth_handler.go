@@ -1,10 +1,9 @@
+// internal/handler/auth_handler.go
 package handler
 
 import (
 	"net/http"
-	"time"
-
-	"template-backend/internal/model"
+	"template-backend/internal/repository"
 	"template-backend/internal/router"
 	"template-backend/internal/service"
 	"template-backend/pkg/utils"
@@ -13,42 +12,100 @@ import (
 	"gorm.io/gorm"
 )
 
-type AuthHandler struct{}
-
-func init() {
-	// 自动注册路由模块（通过 init 自动调用）
-	router.RegisterRouteModule(&AuthHandler{})
+type AuthHandler struct {
+	authService *service.AuthService
 }
 
-func (h *AuthHandler) Register(rg *gin.RouterGroup, _ *gorm.DB) {
-	auth := rg.Group("/auth")
-	auth.POST("/login", h.Login)
-	// 需要鉴权的接口使用 JWT 中间件
-	auth.POST("/logout", h.Logout)
-	auth.GET("/user", h.User)
-	auth.POST("/refresh", h.Refresh)
-	auth.POST("/change-password", h.ChangePassword)
+func NewAuthHandler(authService *service.AuthService) *AuthHandler {
+	return &AuthHandler{authService: authService}
 }
 
-// Login 登录
+// Login 用户登录
 func (h *AuthHandler) Login(c *gin.Context) {
-	var form model.LoginForm
-	if err := c.ShouldBindJSON(&form); err != nil {
-		utils.JSON(c, utils.Error("invalid params", http.StatusBadRequest))
+	var req struct {
+		Username string `json:"username" binding:"required"`
+		Password string `json:"password" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "参数错误"})
 		return
 	}
 
-	resp, err := service.Login(form.Username, form.Password)
+	resp, err := h.authService.Login(req.Username, req.Password)
 	if err != nil {
-		utils.JSON(c, utils.Error("internal error", http.StatusInternalServerError))
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": err.Error()})
 		return
 	}
-	if resp == nil {
-		utils.JSON(c, utils.Error("username or password incorrect", http.StatusUnauthorized))
+	utils.JSON(c, utils.Success(resp))
+}
+
+// GetUserInfo 获取用户信息
+func (h *AuthHandler) GetUserInfo(c *gin.Context) {
+	// 从token中获取用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "未授权"})
 		return
 	}
 
-	utils.JSON(c, utils.Success(resp))
+	userInfo, err := h.authService.GetUserInfo(userID.(uint))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+		return
+	}
+
+	utils.JSON(c, utils.Success(userInfo))
+}
+
+// RefreshToken 刷新token
+func (h *AuthHandler) RefreshToken(c *gin.Context) {
+	var req struct {
+		Token string `json:"token" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "参数错误"})
+		return
+	}
+
+	newToken, err := h.authService.RefreshToken(req.Token)
+	if err != nil {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "data": gin.H{"token": newToken}})
+
+	utils.JSON(c, utils.Success(gin.H{"token": newToken}))
+}
+
+// ChangePassword 修改密码
+func (h *AuthHandler) ChangePassword(c *gin.Context) {
+	// 从token中获取用户ID
+	userID, exists := c.Get("userID")
+	if !exists {
+		c.JSON(http.StatusUnauthorized, gin.H{"code": 401, "message": "未授权"})
+		return
+	}
+
+	var req struct {
+		OldPassword string `json:"oldPassword" binding:"required"`
+		NewPassword string `json:"newPassword" binding:"required,min=6"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "参数错误"})
+		return
+	}
+
+	err := h.authService.ChangePassword(userID.(uint), req.OldPassword, req.NewPassword)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": err.Error()})
+		return
+	}
+
+	utils.JSON(c, utils.Success(gin.H{"ok": true}))
 }
 
 // Logout 登出（演示：客户端删除 token 即可；这里返回成功）
@@ -56,57 +113,18 @@ func (h *AuthHandler) Logout(c *gin.Context) {
 	utils.JSON(c, utils.Success(gin.H{"ok": true}))
 }
 
-// User 获取当前用户信息（从 token 中取 username）
-func (h *AuthHandler) User(c *gin.Context) {
-	// middleware 已验证 token，有需要可把解析结果放到 context
-	usernameIfc, exists := c.Get("username")
-	if !exists {
-		utils.JSON(c, utils.Error("not authenticated", http.StatusUnauthorized))
-		return
-	}
-	username, _ := usernameIfc.(string)
-	user := service.GetUserInfo(username)
-	utils.JSON(c, utils.Success(user))
+func init() {
+	// 自动注册路由模块（通过 init 自动调用）
+	router.RegisterRouteModule(&AuthHandler{})
 }
 
-// Refresh 刷新 token：解析旧 token 并返回新的 token（简单实现）
-func (h *AuthHandler) Refresh(c *gin.Context) {
-	type RefreshReq struct {
-		Token string `json:"token" binding:"required"`
-	}
-	var req RefreshReq
-	if err := c.ShouldBindJSON(&req); err != nil {
-		utils.JSON(c, utils.Error("invalid params", http.StatusBadRequest))
-		return
-	}
-	newToken, err := service.RefreshToken(req.Token)
-	if err != nil {
-		utils.JSON(c, utils.Error("refresh failed: "+err.Error(), http.StatusUnauthorized))
-		return
-	}
-	utils.JSON(c, utils.Success(gin.H{"token": newToken}))
-}
-
-// ChangePassword 修改密码（模拟校验旧密码）
-func (h *AuthHandler) ChangePassword(c *gin.Context) {
-	var form model.ChangePasswordForm
-	if err := c.ShouldBindJSON(&form); err != nil {
-		utils.JSON(c, utils.Error("invalid params", http.StatusBadRequest))
-		return
-	}
-
-	// TODO: 实际场景需要从 token 中获取用户并校验旧密码（bcrypt）
-	usernameIfc, exists := c.Get("username")
-	if !exists {
-		utils.JSON(c, utils.Error("not authenticated", http.StatusUnauthorized))
-		return
-	}
-	username := usernameIfc.(string)
-
-	ok := service.ChangePassword(username, form.OldPassword, form.NewPassword)
-	if !ok {
-		utils.JSON(c, utils.Error("old password incorrect", http.StatusBadRequest))
-		return
-	}
-	utils.JSON(c, utils.Success(gin.H{"ok": true, "updatedAt": time.Now().Format(time.RFC3339)}))
+func (h *AuthHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
+	h.authService = service.NewAuthService(repository.NewUserRepository(db))
+	auth := rg.Group("/auth")
+	auth.POST("/login", h.Login)
+	// 需要鉴权的接口使用 JWT 中间件
+	auth.POST("/logout", h.Logout)
+	auth.GET("/user", h.GetUserInfo)
+	auth.POST("/refresh", h.RefreshToken)
+	auth.POST("/change-password", h.ChangePassword)
 }

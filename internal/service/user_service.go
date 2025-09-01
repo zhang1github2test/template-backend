@@ -16,6 +16,7 @@ func NewUserService(userDAO *repository.UserRepository) *UserService {
 }
 
 func (s *UserService) GetList(page, pageSize int, filters map[string]interface{}) ([]model.User, int64, error) {
+
 	return s.userDAO.GetList(page, pageSize, filters)
 }
 
@@ -33,4 +34,14 @@ func (s *UserService) Update(user *model.User) error {
 
 func (s *UserService) Delete(id uint) error {
 	return s.userDAO.Delete(id)
+}
+
+// 为用户分配角色
+func (s *UserService) AssignRoles(userID uint, roleIDs []uint) error {
+	return s.userDAO.AssignRoles(userID, roleIDs)
+}
+
+// 获取用户的角色
+func (s *UserService) GetUserRoles(userID uint) ([]model.Role, error) {
+	return s.userDAO.GetUserRoles(userID)
 }

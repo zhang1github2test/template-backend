@@ -8,6 +8,7 @@ import (
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
 	"template-backend/internal/service"
+	"template-backend/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"gorm.io/gorm"
@@ -72,12 +73,21 @@ func (h *UserHandler) GetByID(c *gin.Context) {
 
 // POST /api/users
 func (h *UserHandler) Create(c *gin.Context) {
-	var req model.User
+	var req model.UserCreateInformation
 	if err := c.ShouldBindJSON(&req); err != nil {
 		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "参数错误"})
 		return
 	}
-	if err := h.userService.Create(&req); err != nil {
+	var user model.User
+	utils.DeepCopyStruct(&user, &req)
+	password, err := utils.HashPassword(user.Password)
+	if err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "Password 设置不正确"})
+		return
+	}
+	user.Password = password
+
+	if err := h.userService.Create(&user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
 		return
 	}
@@ -122,6 +132,46 @@ func (h *UserHandler) Delete(c *gin.Context) {
 	c.JSON(http.StatusOK, gin.H{"code": 200, "message": "删除成功"})
 }
 
+func (h *UserHandler) AssignRoles(c *gin.Context) {
+	userID, _ := strconv.Atoi(c.Param("id"))
+
+	var req struct {
+		RoleIDs []uint `json:"roleIds" binding:"required"`
+	}
+
+	if err := c.ShouldBindJSON(&req); err != nil {
+		c.JSON(http.StatusBadRequest, gin.H{"code": 400, "message": "参数错误"})
+		return
+	}
+
+	if err := h.userService.AssignRoles(uint(userID), req.RoleIDs); err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "角色分配失败: " + err.Error()})
+		return
+	}
+
+	// 获取更新后的用户信息
+	userWithRoles, err := h.userService.GetByID(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "获取用户信息失败: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "data": userWithRoles, "message": "角色分配成功"})
+}
+
+// GET /api/users/:id/roles - 获取用户的角色
+func (h *UserHandler) GetUserRoles(c *gin.Context) {
+	userID, _ := strconv.Atoi(c.Param("id"))
+
+	roles, err := h.userService.GetUserRoles(uint(userID))
+	if err != nil {
+		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": "获取用户角色失败: " + err.Error()})
+		return
+	}
+
+	c.JSON(http.StatusOK, gin.H{"code": 200, "data": roles})
+}
+
 func (h *UserHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
 	h.userService = service.NewUserService(repository.NewUserRepository(db))
 	users := rg.Group("/users")
@@ -130,6 +180,10 @@ func (h *UserHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
 	users.POST("", h.Create)
 	users.PUT("/:id", h.Update)
 	users.DELETE("/:id", h.Delete)
+
+	// 新增角色相关路由
+	users.POST("/:id/roles", h.AssignRoles)
+	users.GET("/:id/roles", h.GetUserRoles)
 }
 
 func init() {

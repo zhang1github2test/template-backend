@@ -62,3 +62,34 @@ func (d *UserRepository) Update(user *model.User) error {
 func (d *UserRepository) Delete(id uint) error {
 	return d.db.Delete(&model.User{}, id).Error
 }
+
+// 为用户分配角色
+func (d *UserRepository) AssignRoles(userID uint, roleIDs []uint) error {
+	// 先删除用户现有的所有角色
+	if err := d.db.Where("user_id = ?", userID).Delete(&model.UserRole{}).Error; err != nil {
+		return err
+	}
+
+	// 添加新的角色关联
+	if len(roleIDs) > 0 {
+		var userRoles []model.UserRole
+		for _, roleID := range roleIDs {
+			userRoles = append(userRoles, model.UserRole{
+				UserID: userID,
+				RoleID: roleID,
+			})
+		}
+		return d.db.Create(&userRoles).Error
+	}
+
+	return nil
+}
+
+// 获取用户的角色
+func (d *UserRepository) GetUserRoles(userID uint) ([]model.Role, error) {
+	var user model.User
+	if err := d.db.Preload("Roles").First(&user, userID).Error; err != nil {
+		return nil, err
+	}
+	return user.Roles, nil
+}
