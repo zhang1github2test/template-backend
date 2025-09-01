@@ -28,7 +28,7 @@ func ServerMain() {
 	defer logger.Sync()
 
 	r := gin.New()
-	r.Use(gin.Recovery(), middleware.LoggingMiddleware(logger), middleware.CORSMiddleware(), middleware.JWTMiddleware())
+	r.Use(gin.Recovery(), middleware.EnhancedLoggingMiddleware(logger), middleware.CORSMiddleware(), middleware.JWTMiddleware())
 	db := config.InitDB()
 	// 自动注册路由（模块通过 init 注册）
 	router.RegisterRoutes(r, db)

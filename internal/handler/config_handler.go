@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"template-backend/internal/middleware"
 	"template-backend/internal/model"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
@@ -144,6 +145,7 @@ func init() {
 func (h *ConfigHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
 	h.service = service.NewConfigService(repository.NewConfigRepository(db))
 	api := rg.Group("/system/config")
+	api.Use(middleware.ConfigOperatorName("config"))
 	{
 		api.GET("/list", h.GetConfigList)
 		api.GET("/:id", h.GetConfigById)
