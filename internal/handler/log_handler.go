@@ -6,7 +6,6 @@ import (
 	"gorm.io/gorm"
 	"net/http"
 	"strconv"
-	"strings"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
 	"template-backend/internal/service"
@@ -70,15 +69,11 @@ func (h *logHandler) GetLogList(c *gin.Context) {
 	if handler := c.Query("handler"); handler != "" {
 		conditions["handler"] = handler
 	}
-	if timestampStr := c.Query("timestamp"); timestampStr != "" {
-		// 解析时间范围
-		timestamps := strings.Split(timestampStr, ",")
-		if len(timestamps) == 2 {
-			startTime, err1 := time.Parse(time.RFC3339, timestamps[0])
-			endTime, err2 := time.Parse(time.RFC3339, timestamps[1])
-			if err1 == nil && err2 == nil {
-				conditions["timestamp"] = []time.Time{startTime, endTime}
-			}
+	if timestamps := c.QueryArray("timestamp[]"); len(timestamps) == 2 {
+		startTime, err1 := time.Parse(time.DateTime, timestamps[0])
+		endTime, err2 := time.Parse(time.DateTime, timestamps[1])
+		if err1 == nil && err2 == nil {
+			conditions["timestamp"] = []time.Time{startTime, endTime}
 		}
 	}
 
