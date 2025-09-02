@@ -70,8 +70,10 @@ func (h *logHandler) GetLogList(c *gin.Context) {
 		conditions["handler"] = handler
 	}
 	if timestamps := c.QueryArray("timestamp[]"); len(timestamps) == 2 {
-		startTime, err1 := time.Parse(time.DateTime, timestamps[0])
-		endTime, err2 := time.Parse(time.DateTime, timestamps[1])
+		// 设置东八区时区
+		loc, _ := time.LoadLocation("Asia/Shanghai")
+		startTime, err1 := time.ParseInLocation(time.DateTime, timestamps[0], loc)
+		endTime, err2 := time.ParseInLocation(time.DateTime, timestamps[1], loc)
 		if err1 == nil && err2 == nil {
 			conditions["timestamp"] = []time.Time{startTime, endTime}
 		}
