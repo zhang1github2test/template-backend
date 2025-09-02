@@ -1,61 +1,109 @@
+// internal/service/auth_service.go
 package service
 
 import (
 	"errors"
+	"template-backend/internal/model"
+	"template-backend/internal/repository"
 	"time"
 
-	"template-backend/internal/model"
-
 	"github.com/golang-jwt/jwt/v5"
+	"golang.org/x/crypto/bcrypt"
 )
 
 var jwtSecret = []byte("secret123")
 
-// Login 模拟登录，用户名 admin 密码 123456
-func Login(username, password string) (*model.LoginResponse, error) {
-	if username != "admin" || password != "123456" {
-		return nil, nil
+type AuthService struct {
+	userRepo *repository.UserRepository
+}
+
+func NewAuthService(userRepo *repository.UserRepository) *AuthService {
+	return &AuthService{userRepo: userRepo}
+}
+
+// Login 用户登录验证
+func (s *AuthService) Login(username, password string) (*model.LoginResponse, error) {
+	// 根据用户名查找用户
+	users, _, err := s.userRepo.GetList(1, 1, map[string]interface{}{"username": username})
+	if err != nil {
+		return nil, err
 	}
+
+	if len(users) == 0 {
+		return nil, errors.New("用户不存在")
+	}
+
+	user := users[0]
+
+	// 验证密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(password)); err != nil {
+		return nil, errors.New("密码错误")
+	}
+
 	// 生成 token
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
-		"username": username,
-		"exp":      time.Now().Add(time.Hour).Unix(),
+		"userId":   user.ID,
+		"username": user.Username,
+		"exp":      time.Now().Add(time.Hour * 24).Unix(), // token 有效期24小时
 	})
-	tokenStr, _ := token.SignedString(jwtSecret)
+	tokenStr, err := token.SignedString(jwtSecret)
+	if err != nil {
+		return nil, err
+	}
 
-	user := model.UserInfo{
-		ID:          1,
-		Username:    "admin",
-		Email:       "admin@example.com",
-		Nickname:    "管理员",
-		Roles:       []string{"admin"},
-		Permissions: []string{"*:*"},
-		CreatedAt:   time.Now().Format(time.RFC3339),
-		UpdatedAt:   time.Now().Format(time.RFC3339),
+	// 获取用户角色
+	roles, err := s.getUserRoles(user.ID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 构建用户信息
+	userInfo := model.UserInfo{
+		ID:          user.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		Nickname:    user.Nickname,
+		Roles:       roles,
+		Permissions: s.getUserPermissions(roles), // 根据角色获取权限
+		CreatedAt:   user.CreatedAt.Format(time.DateTime),
+		UpdatedAt:   user.UpdatedAt.Format(time.DateTime),
 	}
 
 	return &model.LoginResponse{
 		Token:     tokenStr,
-		UserInfo:  user,
-		ExpiresIn: 3600,
+		UserInfo:  userInfo,
+		ExpiresIn: 24 * 3600, // 24小时
 	}, nil
 }
 
-func GetUserInfo(username string) model.UserInfo {
-	return model.UserInfo{
-		ID:          1,
-		Username:    username,
-		Email:       username + "@example.com",
-		Nickname:    "管理员",
-		Roles:       []string{"admin"},
-		Permissions: []string{"*:*", "user:view"},
-		CreatedAt:   time.Now().Format(time.RFC3339),
-		UpdatedAt:   time.Now().Format(time.RFC3339),
+// GetUserInfo 获取用户信息
+func (s *AuthService) GetUserInfo(userID uint) (model.UserInfo, error) {
+	// 根据ID获取用户
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return model.UserInfo{}, err
 	}
+
+	// 获取用户角色
+	roles, err := s.getUserRoles(user.ID)
+	if err != nil {
+		return model.UserInfo{}, err
+	}
+
+	return model.UserInfo{
+		ID:          user.ID,
+		Username:    user.Username,
+		Email:       user.Email,
+		Nickname:    user.Nickname,
+		Roles:       roles,
+		Permissions: s.getUserPermissions(roles),
+		CreatedAt:   user.CreatedAt.Format(time.RFC3339),
+		UpdatedAt:   user.UpdatedAt.Format(time.RFC3339),
+	}, nil
 }
 
-// RefreshToken 解析旧 token 并返回新 token（简单策略：只要旧 token 可解析即发新 token）
-func RefreshToken(oldToken string) (string, error) {
+// RefreshToken 刷新token
+func (s *AuthService) RefreshToken(oldToken string) (string, error) {
 	tok, err := jwt.Parse(oldToken, func(t *jwt.Token) (interface{}, error) {
 		if _, ok := t.Method.(*jwt.SigningMethodHMAC); !ok {
 			return nil, errors.New("unexpected signing method")
@@ -65,24 +113,94 @@ func RefreshToken(oldToken string) (string, error) {
 	if err != nil || !tok.Valid {
 		return "", errors.New("invalid token")
 	}
+
 	claims, ok := tok.Claims.(jwt.MapClaims)
 	if !ok {
 		return "", errors.New("invalid claims")
 	}
-	username, _ := claims["username"].(string)
+
+	userID, ok := claims["userID"].(float64)
+	if !ok {
+		return "", errors.New("invalid user ID in token")
+	}
+
+	username, ok := claims["username"].(string)
+	if !ok {
+		return "", errors.New("invalid username in token")
+	}
+
+	// 验证用户是否存在
+	_, err = s.userRepo.GetByID(uint(userID))
+	if err != nil {
+		return "", errors.New("user not found")
+	}
+
+	// 生成新token
 	newTok := jwt.NewWithClaims(jwt.SigningMethodHS256, jwt.MapClaims{
+		"userID":   uint(userID),
 		"username": username,
-		"exp":      time.Now().Add(time.Hour).Unix(),
+		"exp":      time.Now().Add(time.Hour * 24).Unix(),
 	})
-	newTokenStr, _ := newTok.SignedString(jwtSecret)
+	newTokenStr, err := newTok.SignedString(jwtSecret)
+	if err != nil {
+		return "", err
+	}
+
 	return newTokenStr, nil
 }
 
-// ChangePassword 模拟函数：只接受旧密码等于 "123456"
-func ChangePassword(username, oldPassword, newPassword string) bool {
-	if oldPassword != "123456" {
-		return false
+// ChangePassword 修改密码
+func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword string) error {
+	// 获取用户信息
+	user, err := s.userRepo.GetByID(userID)
+	if err != nil {
+		return errors.New("用户不存在")
 	}
-	// 模拟更新：实际应写 DB / bcrypt 等
-	return true
+
+	// 验证旧密码
+	if err := bcrypt.CompareHashAndPassword([]byte(user.Password), []byte(oldPassword)); err != nil {
+		return errors.New("旧密码错误")
+	}
+
+	// 加密新密码
+	hashedPassword, err := bcrypt.GenerateFromPassword([]byte(newPassword), bcrypt.DefaultCost)
+	if err != nil {
+		return err
+	}
+
+	// 更新密码
+	user.Password = string(hashedPassword)
+	return s.userRepo.Update(user)
+}
+
+// getUserRoles 获取用户角色
+func (s *AuthService) getUserRoles(userID uint) ([]string, error) {
+	roles, err := s.userRepo.GetUserRoles(userID)
+	if err != nil {
+		return nil, err
+	}
+
+	// 这里简化处理，实际应该通过关联表查询用户角色
+	// 在实际项目中，应该建立用户-角色关联表来查询
+	var roleNames []string
+	for _, role := range roles {
+		roleNames = append(roleNames, role.RoleName)
+	}
+	return roleNames, nil
+}
+
+// getUserPermissions 根据角色获取权限
+func (s *AuthService) getUserPermissions(roles []string) []string {
+	permissions := make([]string, 0)
+
+	for _, role := range roles {
+		switch role {
+		case "superAdmin":
+			permissions = append(permissions, "*:*")
+		case "user":
+			permissions = append(permissions, "user:view", "user:edit")
+		}
+	}
+
+	return permissions
 }

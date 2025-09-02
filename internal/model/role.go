@@ -13,4 +13,7 @@ type Role struct {
 	UpdatedAt time.Time `json:"updateTime"`
 	// 多对多关系
 	Permissions []Permission `gorm:"many2many:role_permissions;" json:"permissions,omitempty"`
+
+	// 关联用户
+	Users []User `gorm:"many2many:user_roles;" json:"users,omitempty"`
 }

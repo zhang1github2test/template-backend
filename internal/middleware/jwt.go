@@ -2,13 +2,14 @@ package middleware
 
 import (
 	"errors"
-	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"template-backend/config"
+	"template-backend/pkg/utils"
+
+	"go.uber.org/zap"
 
 	"template-backend/pkg/logger"
-	"template-backend/pkg/utils"
 
 	"github.com/gin-gonic/gin"
 	"github.com/golang-jwt/jwt/v5"
@@ -27,7 +28,6 @@ func JWTMiddleware() gin.HandlerFunc {
 				return
 			}
 		}
-
 		authHeader := c.GetHeader("Authorization")
 		if authHeader == "" {
 			utils.JSON(c, utils.Error("missing Authorization header", http.StatusUnauthorized))
@@ -53,6 +53,10 @@ func JWTMiddleware() gin.HandlerFunc {
 		// 将 username 放到 context，供 handler 使用
 		if username, ok := claims["username"].(string); ok {
 			c.Set("username", username)
+		}
+		// 将 username 放到 context，供 handler 使用
+		if userId, ok := claims["userId"].(string); ok {
+			c.Set("userId", userId)
 		}
 
 		c.Next()
