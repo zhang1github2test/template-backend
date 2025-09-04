@@ -1,0 +1,428 @@
+{
+    "swagger": "2.0",
+    "info": {
+        "description": "template-backend管理系统的API文档",
+        "title": "template-backend API",
+        "contact": {},
+        "version": "1.0"
+    },
+    "host": "localhost:8080",
+    "basePath": "/api",
+    "paths": {
+        "/api/plans": {
+            "get": {
+                "description": "分页获取招生计划信息，支持条件筛选",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "招生计划"
+                ],
+                "summary": "获取招生计划列表",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "页码，默认1",
+                        "name": "page",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "每页数量，默认10",
+                        "name": "page_size",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "学校名称",
+                        "name": "school_name",
+                        "in": "query"
+                    },
+                    {
+                        "type": "integer",
+                        "description": "年份",
+                        "name": "year",
+                        "in": "query"
+                    },
+                    {
+                        "type": "string",
+                        "description": "区属类型",
+                        "name": "district_type",
+                        "in": "query"
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "post": {
+                "description": "新增一条招生计划记录",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "招生计划"
+                ],
+                "summary": "创建招生计划",
+                "parameters": [
+                    {
+                        "description": "招生计划对象",
+                        "name": "plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.HighSchoolAdmissionPlan"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    }
+                }
+            }
+        },
+        "/api/plans/{id}": {
+            "get": {
+                "description": "根据ID获取招生计划详情",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "招生计划"
+                ],
+                "summary": "获取单个招生计划详情",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "招生计划ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "put": {
+                "description": "根据ID更新招生计划信息",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "招生计划"
+                ],
+                "summary": "更新招生计划",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "招生计划ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    },
+                    {
+                        "description": "更新内容",
+                        "name": "plan",
+                        "in": "body",
+                        "required": true,
+                        "schema": {
+                            "$ref": "#/definitions/model.HighSchoolAdmissionPlan"
+                        }
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    }
+                }
+            },
+            "delete": {
+                "description": "根据ID删除招生计划",
+                "consumes": [
+                    "application/json"
+                ],
+                "produces": [
+                    "application/json"
+                ],
+                "tags": [
+                    "招生计划"
+                ],
+                "summary": "删除招生计划",
+                "parameters": [
+                    {
+                        "type": "integer",
+                        "description": "招生计划ID",
+                        "name": "id",
+                        "in": "path",
+                        "required": true
+                    }
+                ],
+                "responses": {
+                    "200": {
+                        "description": "OK",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    },
+                    "400": {
+                        "description": "Bad Request",
+                        "schema": {
+                            "$ref": "#/definitions/utils.ApiResponse"
+                        }
+                    }
+                }
+            }
+        }
+    },
+    "definitions": {
+        "dto.CreateResourceRequest": {
+            "type": "object",
+            "required": [
+                "permission_code",
+                "resource_name",
+                "type"
+            ],
+            "properties": {
+                "created_by": {
+                    "type": "integer"
+                },
+                "desc": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "http_method": {
+                    "type": "string",
+                    "maxLength": 10
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "permission_code": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "requires_auth": {
+                    "type": "integer"
+                },
+                "resource_name": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "resource_path": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 20
+                }
+            }
+        },
+        "dto.UpdateResourceRequest": {
+            "type": "object",
+            "properties": {
+                "desc": {
+                    "type": "string",
+                    "maxLength": 200
+                },
+                "http_method": {
+                    "type": "string",
+                    "maxLength": 10
+                },
+                "parent_id": {
+                    "type": "integer"
+                },
+                "permission_code": {
+                    "type": "string",
+                    "maxLength": 100
+                },
+                "remark": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "requires_auth": {
+                    "type": "integer"
+                },
+                "resource_name": {
+                    "type": "string",
+                    "maxLength": 50
+                },
+                "resource_path": {
+                    "type": "string",
+                    "maxLength": 500
+                },
+                "sort": {
+                    "type": "integer"
+                },
+                "status": {
+                    "type": "integer"
+                },
+                "type": {
+                    "type": "string",
+                    "maxLength": 20
+                },
+                "updated_by": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.HighSchoolAdmissionPlan": {
+            "type": "object",
+            "properties": {
+                "ac_students": {
+                    "type": "integer"
+                },
+                "acd_students": {
+                    "type": "integer"
+                },
+                "admission_scope": {
+                    "type": "string"
+                },
+                "boarding_students": {
+                    "type": "integer"
+                },
+                "d_students": {
+                    "type": "integer"
+                },
+                "day_students": {
+                    "type": "integer"
+                },
+                "district_type": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "operation_nature": {
+                    "type": "string"
+                },
+                "remarks": {
+                    "type": "string"
+                },
+                "school_level": {
+                    "type": "string"
+                },
+                "school_name": {
+                    "type": "string"
+                },
+                "total_students": {
+                    "type": "integer"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "model.SchoolAdmissionInfo": {
+            "type": "object",
+            "properties": {
+                "admissionScope": {
+                    "type": "string"
+                },
+                "category": {
+                    "type": "string"
+                },
+                "createdAt": {
+                    "type": "string"
+                },
+                "id": {
+                    "type": "integer"
+                },
+                "schoolCode": {
+                    "type": "string"
+                },
+                "schoolName": {
+                    "type": "string"
+                },
+                "tieBreaker": {
+                    "type": "string"
+                },
+                "totalScore": {
+                    "type": "integer"
+                },
+                "updatedAt": {
+                    "type": "string"
+                },
+                "year": {
+                    "type": "integer"
+                }
+            }
+        },
+        "utils.ApiResponse": {
+            "type": "object",
+            "properties": {
+                "code": {
+                    "type": "integer"
+                },
+                "data": {},
+                "message": {
+                    "type": "string"
+                },
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        }
+    }
+}

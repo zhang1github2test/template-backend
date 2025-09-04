@@ -16,3 +16,7 @@ type HighSchoolAdmissionPlan struct {
 	AcStudents       int    `gorm:"default:0" json:"ac_students"`
 	DStudents        int    `gorm:"default:0" json:"d_students"`
 }
+
+func (HighSchoolAdmissionPlan) TableName() string {
+	return "high_school_admission_plan"
+}

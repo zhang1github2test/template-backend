@@ -1,0 +1,587 @@
+basePath: /api
+definitions:
+  dto.CreateResourceRequest:
+    properties:
+      created_by:
+        type: integer
+      desc:
+        maxLength: 200
+        type: string
+      http_method:
+        maxLength: 10
+        type: string
+      parent_id:
+        type: integer
+      permission_code:
+        maxLength: 100
+        type: string
+      remark:
+        maxLength: 500
+        type: string
+      requires_auth:
+        type: integer
+      resource_name:
+        maxLength: 50
+        type: string
+      resource_path:
+        maxLength: 500
+        type: string
+      sort:
+        type: integer
+      type:
+        maxLength: 20
+        type: string
+    required:
+    - permission_code
+    - resource_name
+    - type
+    type: object
+  dto.UpdateResourceRequest:
+    properties:
+      desc:
+        maxLength: 200
+        type: string
+      http_method:
+        maxLength: 10
+        type: string
+      parent_id:
+        type: integer
+      permission_code:
+        maxLength: 100
+        type: string
+      remark:
+        maxLength: 500
+        type: string
+      requires_auth:
+        type: integer
+      resource_name:
+        maxLength: 50
+        type: string
+      resource_path:
+        maxLength: 500
+        type: string
+      sort:
+        type: integer
+      status:
+        type: integer
+      type:
+        maxLength: 20
+        type: string
+      updated_by:
+        type: integer
+    type: object
+  model.HighSchoolAdmissionPlan:
+    properties:
+      ac_students:
+        type: integer
+      acd_students:
+        type: integer
+      admission_scope:
+        type: string
+      boarding_students:
+        type: integer
+      d_students:
+        type: integer
+      day_students:
+        type: integer
+      district_type:
+        type: string
+      id:
+        type: integer
+      operation_nature:
+        type: string
+      remarks:
+        type: string
+      school_level:
+        type: string
+      school_name:
+        type: string
+      total_students:
+        type: integer
+      year:
+        type: integer
+    type: object
+  model.SchoolAdmissionInfo:
+    properties:
+      admissionScope:
+        type: string
+      category:
+        type: string
+      createdAt:
+        type: string
+      id:
+        type: integer
+      schoolCode:
+        type: string
+      schoolName:
+        type: string
+      tieBreaker:
+        type: string
+      totalScore:
+        type: integer
+      updatedAt:
+        type: string
+      year:
+        type: integer
+    type: object
+  utils.ApiResponse:
+    properties:
+      code:
+        type: integer
+      data: {}
+      message:
+        type: string
+      success:
+        type: boolean
+    type: object
+host: localhost:8080
+info:
+  contact: {}
+  description: template-backend管理系统的API文档
+  title: template-backend API
+  version: "1.0"
+paths:
+  /api/plans:
+    get:
+      consumes:
+      - application/json
+      description: 分页获取招生计划信息，支持条件筛选
+      parameters:
+      - description: 页码，默认1
+        in: query
+        name: page
+        type: integer
+      - description: 每页数量，默认10
+        in: query
+        name: page_size
+        type: integer
+      - description: 学校名称
+        in: query
+        name: school_name
+        type: string
+      - description: 年份
+        in: query
+        name: year
+        type: integer
+      - description: 区属类型
+        in: query
+        name: district_type
+        type: string
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 获取招生计划列表
+      tags:
+      - 招生计划
+    post:
+      consumes:
+      - application/json
+      description: 新增一条招生计划记录
+      parameters:
+      - description: 招生计划对象
+        in: body
+        name: plan
+        required: true
+        schema:
+          $ref: '#/definitions/model.HighSchoolAdmissionPlan'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 创建招生计划
+      tags:
+      - 招生计划
+  /api/plans/{id}:
+    delete:
+      consumes:
+      - application/json
+      description: 根据ID删除招生计划
+      parameters:
+      - description: 招生计划ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 删除招生计划
+      tags:
+      - 招生计划
+    get:
+      consumes:
+      - application/json
+      description: 根据ID获取招生计划详情
+      parameters:
+      - description: 招生计划ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 获取单个招生计划详情
+      tags:
+      - 招生计划
+    put:
+      consumes:
+      - application/json
+      description: 根据ID更新招生计划信息
+      parameters:
+      - description: 招生计划ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 更新内容
+        in: body
+        name: plan
+        required: true
+        schema:
+          $ref: '#/definitions/model.HighSchoolAdmissionPlan'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 更新招生计划
+      tags:
+      - 招生计划
+  /api/resources:
+    get:
+      description: 根据条件查询资源列表，支持分页
+      parameters:
+      - description: 资源ID
+        in: query
+        name: id
+        type: integer
+      - description: 资源名称
+        in: query
+        name: resource_name
+        type: string
+      - description: 权限标识码
+        in: query
+        name: permission_code
+        type: string
+      - description: 资源类型
+        in: query
+        name: type
+        type: string
+      - description: 资源路径
+        in: query
+        name: resource_path
+        type: string
+      - description: HTTP方法
+        in: query
+        name: http_method
+        type: string
+      - description: 父权限ID
+        in: query
+        name: parent_id
+        type: integer
+      - description: 状态
+        in: query
+        name: status
+        type: integer
+      - description: 是否需要鉴权
+        in: query
+        name: requires_auth
+        type: integer
+      - default: 1
+        description: 页码
+        in: query
+        name: page
+        type: integer
+      - default: 10
+        description: 每页数量
+        in: query
+        name: page_size
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 查询资源列表
+      tags:
+      - 资源管理
+    post:
+      consumes:
+      - application/json
+      description: 创建新的资源
+      parameters:
+      - description: 资源信息
+        in: body
+        name: resource
+        required: true
+        schema:
+          $ref: '#/definitions/dto.CreateResourceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 创建资源
+      tags:
+      - 资源管理
+  /api/resources/{id}:
+    delete:
+      description: 删除指定ID的资源
+      parameters:
+      - description: 资源ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 删除资源
+      tags:
+      - 资源管理
+    get:
+      description: 根据ID获取资源详情
+      parameters:
+      - description: 资源ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 获取资源详情
+      tags:
+      - 资源管理
+    put:
+      consumes:
+      - application/json
+      description: 更新指定ID的资源
+      parameters:
+      - description: 资源ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 资源信息
+        in: body
+        name: resource
+        required: true
+        schema:
+          $ref: '#/definitions/dto.UpdateResourceRequest'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 更新资源
+      tags:
+      - 资源管理
+  /api/school-admission:
+    get:
+      consumes:
+      - application/json
+      description: 分页 + 搜索（按学校名称、年份）
+      parameters:
+      - description: 页码
+        in: query
+        name: page
+        required: true
+        type: integer
+      - description: 每页数量
+        in: query
+        name: pageSize
+        required: true
+        type: integer
+      - description: 学校名称（模糊查询）
+        in: query
+        name: schoolName
+        type: string
+      - description: 年份
+        in: query
+        name: year
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 获取学校招生录取信息列表
+      tags:
+      - SchoolAdmission
+  /school-admission:
+    post:
+      consumes:
+      - application/json
+      parameters:
+      - description: 学校招生信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/model.SchoolAdmissionInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 新增学校招生信息
+      tags:
+      - SchoolAdmission
+  /school-admission/{id}:
+    delete:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 删除学校招生信息
+      tags:
+      - SchoolAdmission
+    get:
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 获取学校招生信息
+      tags:
+      - SchoolAdmission
+    put:
+      consumes:
+      - application/json
+      parameters:
+      - description: ID
+        in: path
+        name: id
+        required: true
+        type: integer
+      - description: 学校招生信息
+        in: body
+        name: data
+        required: true
+        schema:
+          $ref: '#/definitions/model.SchoolAdmissionInfo'
+      produces:
+      - application/json
+      responses:
+        "200":
+          description: OK
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+        "400":
+          description: Bad Request
+          schema:
+            $ref: '#/definitions/utils.ApiResponse'
+      summary: 更新学校招生信息
+      tags:
+      - SchoolAdmission
+swagger: "2.0"

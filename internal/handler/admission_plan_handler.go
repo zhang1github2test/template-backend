@@ -1,18 +1,20 @@
 package handler
 
 import (
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
 
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
+	"gorm.io/gorm"
+
 	"template-backend/internal/model"
 	"template-backend/internal/service"
 	"template-backend/pkg/logger"
 	"template-backend/pkg/utils"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 )
 
 // ListRequest 查询参数结构体
@@ -82,11 +84,17 @@ func (h *AdmissionPlanHandler) List(c *gin.Context) {
 	}
 
 	logger.Logger().Info("List 查询成功", zap.Int64("total", total))
-	utils.JSON(c, utils.Success(gin.H{
-		"list":      plans,
-		"total":     total,
-		"page":      req.Page,
-		"page_size": req.PageSize,
+	//utils.JSON(c, utils.Success(gin.H{
+	//	"list":      plans,
+	//	"total":     total,
+	//	"page":      req.Page,
+	//	"page_size": req.PageSize,
+	//}))
+	utils.JSON(c, utils.Success(utils.PageResult[model.HighSchoolAdmissionPlan]{
+		List:     plans,
+		Total:    total,
+		Page:     req.Page,
+		PageSize: req.PageSize,
 	}))
 }
 
@@ -212,7 +220,7 @@ func (h *AdmissionPlanHandler) Delete(c *gin.Context) {
 	}
 
 	logger.Logger().Info("Delete 删除成功", zap.Int("id", id))
-	utils.JSON(c, utils.Success(nil))
+	utils.JSON(c, utils.Success(""))
 }
 
 func init() {

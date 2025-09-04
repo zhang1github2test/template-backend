@@ -1,9 +1,6 @@
 package handler
 
 import (
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/repository"
@@ -12,6 +9,10 @@ import (
 	"template-backend/pkg/logger"
 	"template-backend/pkg/utils"
 	"time"
+
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 )
 
 type LogHandler interface {
@@ -153,7 +154,7 @@ func (h *logHandler) DeleteLog(c *gin.Context) {
 		})
 		return
 	}
-	utils.JSON(c, utils.Success(nil))
+	utils.JSON(c, utils.Success(""))
 }
 
 // DeleteLogs 批量删除日志
@@ -194,7 +195,7 @@ func (h *logHandler) DeleteLogs(c *gin.Context) {
 		return
 	}
 
-	utils.JSON(c, utils.Success(nil))
+	utils.JSON(c, utils.Success(""))
 }
 
 // CleanLogs 清空日志
@@ -212,7 +213,7 @@ func (h *logHandler) CleanLogs(c *gin.Context) {
 		return
 	}
 
-	utils.JSON(c, utils.Success(nil))
+	utils.JSON(c, utils.Success(""))
 }
 
 // ExportLogs 导出日志
