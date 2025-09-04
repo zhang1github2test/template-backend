@@ -64,12 +64,12 @@ func (r *RoleRepository) GetByID(id uint) (*model.Role, error) {
 	return &role, nil
 }
 
-func (r *RoleRepository) GetPermissions(roleID uint) ([]model.Permission, error) {
+func (r *RoleRepository) GetPermissions(roleID uint) ([]model.Resource, error) {
 	var role model.Role
-	if err := r.db.Preload("Permissions").First(&role, roleID).Error; err != nil {
+	if err := r.db.Preload("Resources").First(&role, roleID).Error; err != nil {
 		return nil, err
 	}
-	return role.Permissions, nil
+	return role.Resources, nil
 }
 
 func (r *RoleRepository) UpdatePermissions(roleID uint, permissionIds []uint) error {
@@ -78,10 +78,10 @@ func (r *RoleRepository) UpdatePermissions(roleID uint, permissionIds []uint) er
 		return err
 	}
 
-	var permissions []model.Permission
+	var permissions []model.Resource
 	if err := r.db.Where("id IN ?", permissionIds).Find(&permissions).Error; err != nil {
 		return err
 	}
 
-	return r.db.Model(&role).Association("Permissions").Replace(permissions)
+	return r.db.Model(&role).Association("Resources").Replace(permissions)
 }

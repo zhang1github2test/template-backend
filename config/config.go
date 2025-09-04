@@ -2,10 +2,11 @@ package config
 
 import (
 	"fmt"
-	"gorm.io/gorm/logger"
 	"os"
 	"template-backend/internal/model"
 	"time"
+
+	"gorm.io/gorm/logger"
 
 	"github.com/spf13/viper"
 	"gorm.io/driver/mysql"
@@ -92,6 +93,7 @@ func InitDB() *gorm.DB {
 	// 自动建表
 	db.AutoMigrate(&model.User{})
 	db.AutoMigrate(&model.Role{})
+	db.AutoMigrate(&model.RoleResource{})
 	db.AutoMigrate(&model.Menu{})
 	db.AutoMigrate(&model.Config{})
 	db.AutoMigrate(&model.Log{})

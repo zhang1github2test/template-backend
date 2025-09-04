@@ -38,7 +38,7 @@ func (s *RoleService) GetByID(id uint) (*model.Role, error) {
 	return s.roleRepo.GetByID(id)
 }
 
-func (s *RoleService) GetPermissions(roleID uint) ([]model.Permission, error) {
+func (s *RoleService) GetPermissions(roleID uint) ([]model.Resource, error) {
 	return s.roleRepo.GetPermissions(roleID)
 }
 

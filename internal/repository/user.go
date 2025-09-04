@@ -40,6 +40,13 @@ func (d *UserRepository) GetList(page, pageSize int, filters map[string]interfac
 	}
 
 	err = query.Offset((page - 1) * pageSize).Limit(pageSize).Find(&users).Error
+	for i := range users {
+		roles, err := d.GetUserRoles(users[i].ID)
+		if err != nil {
+			continue
+		}
+		users[i].Roles = roles
+	}
 	return users, total, err
 }
 

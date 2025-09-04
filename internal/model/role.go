@@ -12,7 +12,7 @@ type Role struct {
 	CreatedAt time.Time `json:"createTime"`
 	UpdatedAt time.Time `json:"updateTime"`
 	// 多对多关系
-	Permissions []Permission `gorm:"many2many:role_permissions;" json:"permissions,omitempty"`
+	Resources []Resource `gorm:"many2many:role_resources;" json:"resources,omitempty"`
 
 	// 关联用户
 	Users []User `gorm:"many2many:user_roles;" json:"users,omitempty"`
