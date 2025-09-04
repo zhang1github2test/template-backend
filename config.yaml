@@ -7,8 +7,9 @@ jwt:
   expires: 1000
   skip_auth_urls:
     - auth/login
+    - /swagger
 database:
-  host: 127.0.0.1:3306
+  host: localhost:3306
   dbName: template
-  account: remote_user
-  password: RemoteUserPassword@123
+  account: root
+  password: 123456

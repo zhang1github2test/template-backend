@@ -2,11 +2,11 @@ package main
 
 import "template-backend/cmd/server"
 
+// @title template-backend API
+// @version 1.0
+// @description template-backend管理系统的API文档
+// @host localhost:8080
+// @BasePath /api
 func main() {
-	//password, err := bcrypt.GenerateFromPassword([]byte("123456"), bcrypt.DefaultCost)
-	//if err != nil {
-	//	panic(err)
-	//}
-	//fmt.Print(string(password))
 	server.ServerMain()
 }

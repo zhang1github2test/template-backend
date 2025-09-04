@@ -18,6 +18,12 @@ import (
 	"go.uber.org/zap"
 
 	"github.com/gin-gonic/gin"
+
+	"github.com/swaggo/files"
+	"github.com/swaggo/gin-swagger"
+
+	// 导入自动生成的docs包
+	_ "template-backend/docs" // 这里需要根据你的项目名调整
 )
 
 func ServerMain() {
@@ -32,6 +38,8 @@ func ServerMain() {
 	db := config.InitDB()
 	// 自动注册路由（模块通过 init 注册）
 	router.RegisterRoutes(r, db)
+	// 添加Swagger路由
+	r.GET("/swagger/*any", ginSwagger.WrapHandler(swaggerFiles.Handler))
 
 	srv := &http.Server{
 		Addr:    fmt.Sprintf(":%d", cfg.App.Port),

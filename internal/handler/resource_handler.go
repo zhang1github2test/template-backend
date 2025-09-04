@@ -29,8 +29,8 @@ func NewResourceHandler(resourceService service.ResourceService) *ResourceHandle
 // @Accept json
 // @Produce json
 // @Param resource body dto.CreateResourceRequest true "资源信息"
-// @Success 200 {object} dto.ResourceResponse
-// @Failure 400 {object} ErrorResponse
+// @Success 200 {object} utils.ApiResponse
+// @Failure 400 {object} utils.ApiResponse
 // @Router /api/resources [post]
 func (h *ResourceHandler) CreateResource(c *gin.Context) {
 	var req dto.CreateResourceRequest
@@ -64,8 +64,8 @@ func (h *ResourceHandler) CreateResource(c *gin.Context) {
 // @Tags 资源管理
 // @Produce json
 // @Param id path int true "资源ID"
-// @Success 200 {object} dto.ResourceResponse
-// @Failure 400 {object} ErrorResponse
+// @Success 200 {object} utils.ApiResponse
+// @Failure 400 {object} utils.ApiResponse
 // @Router /api/resources/{id} [get]
 func (h *ResourceHandler) GetResource(c *gin.Context) {
 	idStr := c.Param("id")
@@ -102,8 +102,8 @@ func (h *ResourceHandler) GetResource(c *gin.Context) {
 // @Produce json
 // @Param id path int true "资源ID"
 // @Param resource body dto.UpdateResourceRequest true "资源信息"
-// @Success 200 {object} dto.ResourceResponse
-// @Failure 400 {object} ErrorResponse
+// @Success 200 {object} utils.ApiResponse
+// @Failure 400 {object} utils.ApiResponse
 // @Router /api/resources/{id} [put]
 func (h *ResourceHandler) UpdateResource(c *gin.Context) {
 	idStr := c.Param("id")
@@ -147,8 +147,8 @@ func (h *ResourceHandler) UpdateResource(c *gin.Context) {
 // @Tags 资源管理
 // @Produce json
 // @Param id path int true "资源ID"
-// @Success 200
-// @Failure 400 {object} ErrorResponse
+// @Success 200 {object} utils.ApiResponse
+// @Failure 400 {object} utils.ApiResponse
 // @Router /api/resources/{id} [delete]
 func (h *ResourceHandler) DeleteResource(c *gin.Context) {
 	idStr := c.Param("id")
@@ -192,8 +192,8 @@ func (h *ResourceHandler) DeleteResource(c *gin.Context) {
 // @Param requires_auth query int false "是否需要鉴权"
 // @Param page query int false "页码" default(1)
 // @Param page_size query int false "每页数量" default(10)
-// @Success 200 {object} dto.PagedResponse
-// @Failure 400 {object} ErrorResponse
+// @Success 200 {object} utils.ApiResponse
+// @Failure 400 {object} utils.ApiResponse
 // @Router /api/resources [get]
 func (h *ResourceHandler) ListResources(c *gin.Context) {
 	var req dto.ResourceQueryRequest
