@@ -1,6 +1,9 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/middleware"
@@ -10,10 +13,6 @@ import (
 	"template-backend/internal/service"
 	"template-backend/pkg/logger"
 	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type ConfigHandler struct {
@@ -53,10 +52,11 @@ func (h *ConfigHandler) GetConfigList(c *gin.Context) {
 		utils.JSON(c, utils.Error(err.Error(), http.StatusInternalServerError))
 		return
 	}
-
-	data := map[string]any{
-		"rows":  configs,
-		"total": total,
+	data := utils.PageResult[model.Config]{
+		List:     configs,
+		Total:    total,
+		Page:     pageNum,
+		PageSize: pageSize,
 	}
 	logger.Logger().Info("GetConfigList 出参", zap.Any("data", data))
 	utils.JSON(c, utils.Success(data))

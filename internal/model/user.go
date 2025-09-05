@@ -14,7 +14,8 @@ type User struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	// 关联角色 (多对多)
-	Roles []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
+	Roles   []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
+	RoleIds []uint `gorm:"-" json:"roleIds,omitempty"`
 }
 
 type UserCreateInformation struct {
@@ -29,5 +30,6 @@ type UserCreateInformation struct {
 	CreatedAt time.Time `json:"createdAt"`
 	UpdatedAt time.Time `json:"updatedAt"`
 	// 关联角色 (多对多)
-	Roles []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
+	Roles   []Role `gorm:"many2many:user_roles;" json:"roles,omitempty"`
+	RoleIds []uint `gorm:"-" json:"roleIds,omitempty"`
 }

@@ -2,14 +2,13 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
 	"template-backend/internal/service"
 	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type AuthHandler struct {
@@ -119,7 +118,7 @@ func init() {
 }
 
 func (h *AuthHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
-	h.authService = service.NewAuthService(repository.NewUserRepository(db))
+	h.authService = service.NewAuthService(repository.NewUserRepository(db), repository.NewRoleRepository(db))
 	auth := rg.Group("/auth")
 	auth.POST("/login", h.Login)
 	// 需要鉴权的接口使用 JWT 中间件

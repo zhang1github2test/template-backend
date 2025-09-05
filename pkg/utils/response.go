@@ -17,6 +17,12 @@ type PageResult[T any] struct {
 	PageSize int   `json:"pageSize"`
 }
 
+type ErrorResponse struct {
+	Success bool   `json:"success"`
+	Message string `json:"message"`
+	Code    int    `json:"code"`
+}
+
 // Success 使用泛型创建成功的响应
 func Success[T any](data T) *ApiResponse[T] {
 	return &ApiResponse[T]{
@@ -28,8 +34,8 @@ func Success[T any](data T) *ApiResponse[T] {
 }
 
 // Error 创建错误响应（错误响应通常不包含数据）
-func Error(message string, code int) *ApiResponse[any] {
-	return &ApiResponse[any]{
+func Error(message string, code int) *ApiResponse[string] {
+	return &ApiResponse[string]{
 		Success: false,
 		Message: message,
 		Code:    code,
@@ -37,6 +43,10 @@ func Error(message string, code int) *ApiResponse[any] {
 }
 
 // JSON 响应函数，支持泛型
-func JSON[T any](ctx *gin.Context, resp *ApiResponse[T]) {
+func JSON[T any](ctx *gin.Context, resp *ApiResponse[T], httpCode ...int) {
+	if len(httpCode) > 0 {
+		ctx.JSON(httpCode[0], resp)
+		return
+	}
 	ctx.JSON(resp.Code, resp)
 }

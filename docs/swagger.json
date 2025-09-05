@@ -58,13 +58,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanPageResponseDoc"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanPageResponseDoc"
                         }
                     }
                 }
@@ -96,13 +96,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     }
                 }
@@ -134,13 +134,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     }
                 }
@@ -179,13 +179,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     }
                 }
@@ -215,13 +215,13 @@
                     "200": {
                         "description": "OK",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     },
                     "400": {
                         "description": "Bad Request",
                         "schema": {
-                            "$ref": "#/definitions/utils.ApiResponse"
+                            "$ref": "#/definitions/dto.HighSchoolAdmissionPlanResponseDoc"
                         }
                     }
                 }
@@ -229,101 +229,57 @@
         }
     },
     "definitions": {
-        "dto.CreateResourceRequest": {
+        "dto.HighSchoolAdmissionPlanPageData": {
             "type": "object",
-            "required": [
-                "permission_code",
-                "resource_name",
-                "type"
-            ],
             "properties": {
-                "created_by": {
+                "list": {
+                    "type": "array",
+                    "items": {
+                        "$ref": "#/definitions/model.HighSchoolAdmissionPlan"
+                    }
+                },
+                "page": {
                     "type": "integer"
                 },
-                "desc": {
-                    "type": "string",
-                    "maxLength": 200
-                },
-                "http_method": {
-                    "type": "string",
-                    "maxLength": 10
-                },
-                "parent_id": {
+                "pageSize": {
                     "type": "integer"
                 },
-                "permission_code": {
-                    "type": "string",
-                    "maxLength": 100
-                },
-                "remark": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "requires_auth": {
+                "total": {
                     "type": "integer"
-                },
-                "resource_name": {
-                    "type": "string",
-                    "maxLength": 50
-                },
-                "resource_path": {
-                    "type": "string",
-                    "maxLength": 500
-                },
-                "sort": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string",
-                    "maxLength": 20
                 }
             }
         },
-        "dto.UpdateResourceRequest": {
+        "dto.HighSchoolAdmissionPlanPageResponseDoc": {
             "type": "object",
             "properties": {
-                "desc": {
-                    "type": "string",
-                    "maxLength": 200
-                },
-                "http_method": {
-                    "type": "string",
-                    "maxLength": 10
-                },
-                "parent_id": {
+                "code": {
                     "type": "integer"
                 },
-                "permission_code": {
-                    "type": "string",
-                    "maxLength": 100
+                "data": {
+                    "$ref": "#/definitions/dto.HighSchoolAdmissionPlanPageData"
                 },
-                "remark": {
-                    "type": "string",
-                    "maxLength": 500
+                "msg": {
+                    "type": "string"
                 },
-                "requires_auth": {
+                "success": {
+                    "type": "boolean"
+                }
+            }
+        },
+        "dto.HighSchoolAdmissionPlanResponseDoc": {
+            "type": "object",
+            "properties": {
+                "code": {
                     "type": "integer"
                 },
-                "resource_name": {
-                    "type": "string",
-                    "maxLength": 50
+                "data": {
+                    "$ref": "#/definitions/model.HighSchoolAdmissionPlan"
                 },
-                "resource_path": {
-                    "type": "string",
-                    "maxLength": 500
+                "msg": {
+                    "type": "string"
                 },
-                "sort": {
-                    "type": "integer"
-                },
-                "status": {
-                    "type": "integer"
-                },
-                "type": {
-                    "type": "string",
-                    "maxLength": 20
-                },
-                "updated_by": {
-                    "type": "integer"
+                "success": {
+                    "type": "boolean"
                 }
             }
         },
@@ -371,56 +327,6 @@
                 },
                 "year": {
                     "type": "integer"
-                }
-            }
-        },
-        "model.SchoolAdmissionInfo": {
-            "type": "object",
-            "properties": {
-                "admissionScope": {
-                    "type": "string"
-                },
-                "category": {
-                    "type": "string"
-                },
-                "createdAt": {
-                    "type": "string"
-                },
-                "id": {
-                    "type": "integer"
-                },
-                "schoolCode": {
-                    "type": "string"
-                },
-                "schoolName": {
-                    "type": "string"
-                },
-                "tieBreaker": {
-                    "type": "string"
-                },
-                "totalScore": {
-                    "type": "integer"
-                },
-                "updatedAt": {
-                    "type": "string"
-                },
-                "year": {
-                    "type": "integer"
-                }
-            }
-        },
-        "utils.ApiResponse": {
-            "type": "object",
-            "properties": {
-                "code": {
-                    "type": "integer"
-                },
-                "data": {},
-                "message": {
-                    "type": "string"
-                },
-                "success": {
-                    "type": "boolean"
                 }
             }
         }

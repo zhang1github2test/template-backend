@@ -2,12 +2,11 @@ package middleware
 
 import (
 	"errors"
+	"go.uber.org/zap"
 	"net/http"
 	"strings"
 	"template-backend/config"
 	"template-backend/pkg/utils"
-
-	"go.uber.org/zap"
 
 	"template-backend/pkg/logger"
 

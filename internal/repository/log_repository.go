@@ -11,7 +11,7 @@ type LogRepository interface {
 	Create(log *model.Log) error
 	CreateInBatches(logs []*model.Log) error
 	GetByID(id uint) (*model.Log, error)
-	List(pageNum, pageSize int, conditions map[string]interface{}) ([]*model.Log, int64, error)
+	List(pageNum, pageSize int, conditions map[string]interface{}) ([]model.Log, int64, error)
 	Delete(id uint) error
 	DeleteBatch(ids []uint) error
 	Clean() error
@@ -47,8 +47,8 @@ func (r *logRepository) GetByID(id uint) (*model.Log, error) {
 	return &log, nil
 }
 
-func (r *logRepository) List(pageNum, pageSize int, conditions map[string]interface{}) ([]*model.Log, int64, error) {
-	var logs []*model.Log
+func (r *logRepository) List(pageNum, pageSize int, conditions map[string]interface{}) ([]model.Log, int64, error) {
+	var logs []model.Log
 	var total int64
 
 	db := r.db.Model(&model.Log{})

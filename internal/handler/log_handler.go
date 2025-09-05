@@ -3,6 +3,7 @@ package handler
 import (
 	"net/http"
 	"strconv"
+	"template-backend/internal/model"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
 	"template-backend/internal/service"
@@ -90,12 +91,14 @@ func (h *logHandler) GetLogList(c *gin.Context) {
 		})
 		return
 	}
-	utils.JSON(c, utils.Success(gin.H{
-		"rows":  logs,
-		"total": total,
-		"page":  pageNum,
-		"size":  pageSize,
-	}))
+
+	data := utils.PageResult[model.Log]{
+		List:     logs,
+		Total:    total,
+		Page:     pageNum,
+		PageSize: pageSize,
+	}
+	utils.JSON(c, utils.Success(data))
 }
 
 // GetLogByID 根据ID获取日志详情

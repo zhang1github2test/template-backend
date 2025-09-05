@@ -2,6 +2,8 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/model"
@@ -9,9 +11,6 @@ import (
 	"template-backend/internal/router"
 	"template-backend/internal/service"
 	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type RoleHandler struct {

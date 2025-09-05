@@ -91,6 +91,12 @@ func (h *UserHandler) Create(c *gin.Context) {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
 		return
 	}
+	if req.RoleIds != nil {
+		if err := h.userService.AssignRoles(user.ID, req.RoleIds); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+			return
+		}
+	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "data": req})
 }
 
@@ -118,6 +124,12 @@ func (h *UserHandler) Update(c *gin.Context) {
 	if err := h.userService.Update(user); err != nil {
 		c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
 		return
+	}
+	if req.RoleIds != nil {
+		if err := h.userService.AssignRoles(user.ID, req.RoleIds); err != nil {
+			c.JSON(http.StatusInternalServerError, gin.H{"code": 500, "message": err.Error()})
+			return
+		}
 	}
 	c.JSON(http.StatusOK, gin.H{"code": 200, "data": user})
 }

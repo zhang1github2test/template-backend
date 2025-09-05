@@ -15,10 +15,11 @@ var jwtSecret = []byte("secret123")
 
 type AuthService struct {
 	userRepo *repository.UserRepository
+	roleRepo *repository.RoleRepository
 }
 
-func NewAuthService(userRepo *repository.UserRepository) *AuthService {
-	return &AuthService{userRepo: userRepo}
+func NewAuthService(userRepo *repository.UserRepository, roleRepo *repository.RoleRepository) *AuthService {
+	return &AuthService{userRepo: userRepo, roleRepo: roleRepo}
 }
 
 // Login 用户登录验证
@@ -52,7 +53,7 @@ func (s *AuthService) Login(username, password string) (*model.LoginResponse, er
 	}
 
 	// 获取用户角色
-	roles, err := s.getUserRoles(user.ID)
+	roleNames, roles, err := s.getUserRoles(user.ID)
 	if err != nil {
 		return nil, err
 	}
@@ -63,7 +64,7 @@ func (s *AuthService) Login(username, password string) (*model.LoginResponse, er
 		Username:    user.Username,
 		Email:       user.Email,
 		Nickname:    user.Nickname,
-		Roles:       roles,
+		Roles:       roleNames,
 		Permissions: s.getUserPermissions(roles), // 根据角色获取权限
 		CreatedAt:   user.CreatedAt.Format(time.DateTime),
 		UpdatedAt:   user.UpdatedAt.Format(time.DateTime),
@@ -85,7 +86,7 @@ func (s *AuthService) GetUserInfo(userID uint) (model.UserInfo, error) {
 	}
 
 	// 获取用户角色
-	roles, err := s.getUserRoles(user.ID)
+	roleNames, roles, err := s.getUserRoles(user.ID)
 	if err != nil {
 		return model.UserInfo{}, err
 	}
@@ -95,7 +96,7 @@ func (s *AuthService) GetUserInfo(userID uint) (model.UserInfo, error) {
 		Username:    user.Username,
 		Email:       user.Email,
 		Nickname:    user.Nickname,
-		Roles:       roles,
+		Roles:       roleNames,
 		Permissions: s.getUserPermissions(roles),
 		CreatedAt:   user.CreatedAt.Format(time.RFC3339),
 		UpdatedAt:   user.UpdatedAt.Format(time.RFC3339),
@@ -174,31 +175,30 @@ func (s *AuthService) ChangePassword(userID uint, oldPassword, newPassword strin
 }
 
 // getUserRoles 获取用户角色
-func (s *AuthService) getUserRoles(userID uint) ([]string, error) {
+func (s *AuthService) getUserRoles(userID uint) ([]string, []model.Role, error) {
 	roles, err := s.userRepo.GetUserRoles(userID)
 	if err != nil {
-		return nil, err
+		return nil, nil, err
 	}
 
-	// 这里简化处理，实际应该通过关联表查询用户角色
-	// 在实际项目中，应该建立用户-角色关联表来查询
 	var roleNames []string
 	for _, role := range roles {
 		roleNames = append(roleNames, role.RoleName)
 	}
-	return roleNames, nil
+	return roleNames, roles, nil
 }
 
 // getUserPermissions 根据角色获取权限
-func (s *AuthService) getUserPermissions(roles []string) []string {
+func (s *AuthService) getUserPermissions(roles []model.Role) []string {
 	permissions := make([]string, 0)
 
 	for _, role := range roles {
-		switch role {
-		case "superAdmin":
-			permissions = append(permissions, "*:*")
-		case "user":
-			permissions = append(permissions, "user:view", "user:edit")
+		getPermissions, err := s.roleRepo.GetPermissions(role.ID)
+		if err != nil {
+			continue
+		}
+		for _, permission := range getPermissions {
+			permissions = append(permissions, permission.PermissionCode)
 		}
 	}
 

@@ -5,16 +5,15 @@ import (
 	"strconv"
 	"template-backend/internal/repository"
 	"template-backend/internal/router"
+	"template-backend/pkg/utils"
 
 	"gorm.io/gorm"
 
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
 	"template-backend/internal/model"
 	"template-backend/internal/service"
 	"template-backend/pkg/logger"
-	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
 )
 
 // ListRequest 查询参数结构体
@@ -44,8 +43,8 @@ func NewAdmissionPlanHandler(svc *service.AdmissionPlanService) *AdmissionPlanHa
 // @Param school_name query string false "学校名称"
 // @Param year query int false "年份"
 // @Param district_type query string false "区属类型"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.HighSchoolAdmissionPlanPageResponseDoc
+// @Failure 400 {object} dto.HighSchoolAdmissionPlanPageResponseDoc
 // @Router /api/plans [get]
 func (h *AdmissionPlanHandler) List(c *gin.Context) {
 	var req ListRequest
@@ -82,20 +81,14 @@ func (h *AdmissionPlanHandler) List(c *gin.Context) {
 		utils.JSON(c, utils.Error("查询失败", http.StatusInternalServerError))
 		return
 	}
-
-	logger.Logger().Info("List 查询成功", zap.Int64("total", total))
-	//utils.JSON(c, utils.Success(gin.H{
-	//	"list":      plans,
-	//	"total":     total,
-	//	"page":      req.Page,
-	//	"page_size": req.PageSize,
-	//}))
-	utils.JSON(c, utils.Success(utils.PageResult[model.HighSchoolAdmissionPlan]{
+	result := utils.PageResult[model.HighSchoolAdmissionPlan]{
 		List:     plans,
 		Total:    total,
 		Page:     req.Page,
 		PageSize: req.PageSize,
-	}))
+	}
+	logger.Logger().Info("List 查询成功", zap.Int64("total", total))
+	utils.JSON(c, utils.Success(result))
 }
 
 // @Summary 获取单个招生计划详情
@@ -104,8 +97,8 @@ func (h *AdmissionPlanHandler) List(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "招生计划ID"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.HighSchoolAdmissionPlanResponseDoc
+// @Failure 400 {object} dto.HighSchoolAdmissionPlanResponseDoc
 // @Router /api/plans/{id} [get]
 func (h *AdmissionPlanHandler) GetByID(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -134,8 +127,8 @@ func (h *AdmissionPlanHandler) GetByID(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param plan body model.HighSchoolAdmissionPlan true "招生计划对象"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.HighSchoolAdmissionPlanResponseDoc
+// @Failure 400 {object} dto.HighSchoolAdmissionPlanResponseDoc
 // @Router /api/plans [post]
 func (h *AdmissionPlanHandler) Create(c *gin.Context) {
 	var plan model.HighSchoolAdmissionPlan
@@ -164,8 +157,8 @@ func (h *AdmissionPlanHandler) Create(c *gin.Context) {
 // @Produce json
 // @Param id path int true "招生计划ID"
 // @Param plan body model.HighSchoolAdmissionPlan true "更新内容"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.HighSchoolAdmissionPlanResponseDoc
+// @Failure 400 {object} dto.HighSchoolAdmissionPlanResponseDoc
 // @Router /api/plans/{id} [put]
 func (h *AdmissionPlanHandler) Update(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))
@@ -200,8 +193,8 @@ func (h *AdmissionPlanHandler) Update(c *gin.Context) {
 // @Accept json
 // @Produce json
 // @Param id path int true "招生计划ID"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.HighSchoolAdmissionPlanResponseDoc
+// @Failure 400 {object} dto.HighSchoolAdmissionPlanResponseDoc
 // @Router /api/plans/{id} [delete]
 func (h *AdmissionPlanHandler) Delete(c *gin.Context) {
 	id, err := strconv.Atoi(c.Param("id"))

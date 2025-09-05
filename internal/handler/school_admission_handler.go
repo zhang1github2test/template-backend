@@ -1,7 +1,9 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
 	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/dto"
@@ -11,9 +13,6 @@ import (
 	"template-backend/internal/service"
 	"template-backend/pkg/logger"
 	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"gorm.io/gorm"
 )
 
 type SchoolAdmissionHandler struct {
@@ -41,13 +40,13 @@ func (h *SchoolAdmissionHandler) Register(rg *gin.RouterGroup, db *gorm.DB) {
 }
 
 // Create godoc
-// @Summary 新增学校招生信息
-// @Tags SchoolAdmission
+// @Summary 新增中考录取信息
+// @Tags 中考录取线
 // @Accept json
 // @Produce json
 // @Param data body model.SchoolAdmissionInfo true "学校招生信息"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.SchoolAdmissionInfoResponseDoc
+// @Failure 400 {object} dto.SchoolAdmissionInfoResponseDoc
 // @Router /school-admission [post]
 func (h *SchoolAdmissionHandler) Create(c *gin.Context) {
 	var req model.SchoolAdmissionInfo
@@ -63,12 +62,12 @@ func (h *SchoolAdmissionHandler) Create(c *gin.Context) {
 }
 
 // GetByID godoc
-// @Summary 获取学校招生信息
-// @Tags SchoolAdmission
+// @Summary 获取中考录取信息
+// @Tags 中考录取线
 // @Produce json
 // @Param id path int true "ID"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.SchoolAdmissionInfoResponseDoc
+// @Failure 400 {object} dto.SchoolAdmissionInfoResponseDoc
 // @Router /school-admission/{id} [get]
 func (h *SchoolAdmissionHandler) GetByID(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -81,17 +80,17 @@ func (h *SchoolAdmissionHandler) GetByID(c *gin.Context) {
 }
 
 // List 获取分页列表
-// @Summary 获取学校招生录取信息列表
+// @Summary 获取中考录取信息列表
 // @Description 分页 + 搜索（按学校名称、年份）
-// @Tags SchoolAdmission
+// @Tags 中考录取线
 // @Accept json
 // @Produce json
 // @Param page query int true "页码"
 // @Param pageSize query int true "每页数量"
 // @Param schoolName query string false "学校名称（模糊查询）"
 // @Param year query int false "年份"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.SchoolAdmissionInfoPageResponseDoc
+// @Failure 400 {object} dto.SchoolAdmissionInfoPageResponseDoc
 // @Router /api/school-admission [get]
 func (h *SchoolAdmissionHandler) List(c *gin.Context) {
 	var req dto.SchoolAdmissionQueryRequest
@@ -120,14 +119,14 @@ func (h *SchoolAdmissionHandler) List(c *gin.Context) {
 }
 
 // Update godoc
-// @Summary 更新学校招生信息
-// @Tags SchoolAdmission
+// @Summary 更新学中考录取信息
+// @Tags 中考录取线
 // @Accept json
 // @Produce json
 // @Param id path int true "ID"
 // @Param data body model.SchoolAdmissionInfo true "学校招生信息"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.SchoolAdmissionInfoResponseDoc
+// @Failure 400 {object} dto.SchoolAdmissionInfoResponseDoc
 // @Router /school-admission/{id} [put]
 func (h *SchoolAdmissionHandler) Update(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
@@ -145,18 +144,23 @@ func (h *SchoolAdmissionHandler) Update(c *gin.Context) {
 }
 
 // Delete godoc
-// @Summary 删除学校招生信息
-// @Tags SchoolAdmission
+// @Summary 删除中考录取信息
+// @Tags 中考录取线
 // @Produce json
 // @Param id path int true "ID"
-// @Success 200 {object} utils.ApiResponse
-// @Failure 400 {object} utils.ApiResponse
+// @Success 200 {object} dto.SchoolAdmissionInfoResponseDoc
+// @Failure 400 {object} dto.SchoolAdmissionInfoResponseDoc
 // @Router /school-admission/{id} [delete]
 func (h *SchoolAdmissionHandler) Delete(c *gin.Context) {
 	id, _ := strconv.Atoi(c.Param("id"))
+	admissionInfo, err := h.svc.GetByID(id)
+	if err != nil {
+		utils.JSON(c, utils.Error(err.Error(), http.StatusNotFound))
+		return
+	}
 	if err := h.svc.Delete(id); err != nil {
 		utils.JSON(c, utils.Error(err.Error(), http.StatusInternalServerError))
 		return
 	}
-	utils.JSON(c, utils.Success("删除成功"))
+	utils.JSON(c, utils.Success(admissionInfo))
 }

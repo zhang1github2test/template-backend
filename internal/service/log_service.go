@@ -12,7 +12,7 @@ import (
 type LogService interface {
 	CreateLog(log *model.Log) error
 	GetLogByID(id uint) (*model.Log, error)
-	GetLogList(pageNum, pageSize int, conditions map[string]interface{}) ([]*model.Log, int64, error)
+	GetLogList(pageNum, pageSize int, conditions map[string]interface{}) ([]model.Log, int64, error)
 	DeleteLog(id uint) error
 	DeleteLogs(ids []uint) error
 	CleanLogs() error
@@ -61,7 +61,7 @@ func (s *logService) GetLogByID(id uint) (*model.Log, error) {
 	return log, nil
 }
 
-func (s *logService) GetLogList(pageNum, pageSize int, conditions map[string]interface{}) ([]*model.Log, int64, error) {
+func (s *logService) GetLogList(pageNum, pageSize int, conditions map[string]interface{}) ([]model.Log, int64, error) {
 	logger.Logger().Info("Fetching log list",
 		zap.Int("pageNum", pageNum),
 		zap.Int("pageSize", pageSize),

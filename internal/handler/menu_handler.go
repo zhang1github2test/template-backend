@@ -2,6 +2,9 @@
 package handler
 
 import (
+	"github.com/gin-gonic/gin"
+	"go.uber.org/zap"
+	"gorm.io/gorm"
 	"net/http"
 	"strconv"
 	"template-backend/internal/model"
@@ -10,10 +13,6 @@ import (
 	"template-backend/internal/service"
 	"template-backend/pkg/logger"
 	"template-backend/pkg/utils"
-
-	"github.com/gin-gonic/gin"
-	"go.uber.org/zap"
-	"gorm.io/gorm"
 )
 
 type MenuHandler struct {

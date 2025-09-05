@@ -55,6 +55,11 @@ func (d *UserRepository) GetByID(id uint) (*model.User, error) {
 	if err := d.db.First(&user, id).Error; err != nil {
 		return nil, err
 	}
+	roles, err := d.GetUserRoles(user.ID)
+	if err != nil {
+		return nil, err
+	}
+	user.Roles = roles
 	return &user, nil
 }
 
